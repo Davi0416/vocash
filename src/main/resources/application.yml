@@ -1,5 +1,15 @@
 spring:
-
+  ai:
+    openai:
+      api-key: ${GROQ_API_KEY}
+      base-url: https://api.groq.com/openai
+      audio:
+        transcription:
+          options:
+            model: whisper-large-v3
+      chat:
+        options:
+          model: llama-3.3-70b-versatile
   application:
     name: vocash
   datasource:
