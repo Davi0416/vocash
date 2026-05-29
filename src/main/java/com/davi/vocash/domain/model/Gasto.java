@@ -30,4 +30,12 @@ public class Gasto {
 
     @Column(nullable = false)
     private LocalDate data;
+
+    public Gasto(BigDecimal valor, String categoria, String descricao, String local, LocalDate data) {
+        this.valor = valor;
+        this.categoria = categoria;
+        this.descricao = descricao;
+        this.local = local;
+        this.data = data;
+    }
 }

@@ -1,7 +1,6 @@
 package com.davi.vocash.interfaces.web;
 
-import com.davi.vocash.infrastructure.TranscricaoService;
-import org.springframework.core.io.ByteArrayResource;
+import com.davi.vocash.application.service.OrquestradorService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,21 +8,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/teste")
 public class TranscricaoController {
 
-    private final TranscricaoService transcricaoService;
+    private final OrquestradorService orquestradorService;
 
-    public TranscricaoController(TranscricaoService transcricaoService) {
-        this.transcricaoService = transcricaoService;
+    public TranscricaoController(OrquestradorService orquestradorService) {
+        this.orquestradorService = orquestradorService;
     }
 
     @PostMapping("/transcrever")
     public String transcrever(@RequestParam("audio") MultipartFile arquivo) throws Exception {
-        ByteArrayResource resource = new ByteArrayResource(arquivo.getBytes()) {
-            @Override
-            public String getFilename() {
-                return arquivo.getOriginalFilename();
-            }
-        };
-
-        return transcricaoService.transcrever(resource);
+        return orquestradorService.processar(arquivo);
     }
 }
