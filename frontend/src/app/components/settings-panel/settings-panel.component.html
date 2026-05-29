@@ -1,0 +1,71 @@
+<div class="scrim" [class.open]="open" (click)="close.emit()"></div>
+
+<div class="settings" [class.open]="open">
+  <div class="sh">
+    <h3>Ajustes</h3>
+    <button class="icon-btn" (click)="close.emit()" aria-label="Fechar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Tema -->
+  <div class="set-group">
+    <label>Tema</label>
+    <div class="seg">
+      <button [class.on]="s.theme === 'dark'"  (click)="setTheme('dark')">Escuro</button>
+      <button [class.on]="s.theme === 'light'" (click)="setTheme('light')">Claro</button>
+    </div>
+  </div>
+
+  <!-- Cor de destaque -->
+  <div class="set-group">
+    <label>Cor de destaque</label>
+    <div class="swatches">
+      <button
+        *ngFor="let a of accents"
+        class="sw"
+        [class.on]="s.accent === a"
+        [style.background]="accentColors[a]"
+        (click)="setAccent(a)"
+        [attr.aria-label]="a">
+      </button>
+    </div>
+  </div>
+
+  <!-- Cartão · fatura -->
+  <div class="set-group">
+    <label>Cartão · fatura</label>
+    <div class="field-row">
+      <label class="num-field">
+        <span>Fecha dia</span>
+        <input type="number" min="1" max="31"
+          [value]="s.fechamento"
+          (change)="setFechamento($any($event.target).value)"
+          (blur)="setFechamento($any($event.target).value)">
+      </label>
+      <label class="num-field">
+        <span>Vence dia</span>
+        <input type="number" min="1" max="31"
+          [value]="s.vencimento"
+          (change)="setVencimento($any($event.target).value)"
+          (blur)="setVencimento($any($event.target).value)">
+      </label>
+    </div>
+  </div>
+
+  <!-- Mostrar resumo -->
+  <div class="set-group">
+    <div class="toggle-row">
+      <span>Mostrar resumo</span>
+      <button class="tg" [class.on]="s.showChart" (click)="toggleChart()" aria-label="Alternar resumo"></button>
+    </div>
+  </div>
+
+  <p class="set-note">
+    Protótipo de demonstração. A transcrição por voz é simulada: ao tocar no microfone,
+    digite a frase do gasto e a IA interpreta valor, categoria, data e parcelas automaticamente.
+    As parcelas se distribuem pelos meses seguintes conforme o dia de fechamento.
+  </p>
+</div>

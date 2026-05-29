@@ -1,0 +1,25 @@
+.shell {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 28px 22px 140px;
+
+  @media (min-width: 980px) {
+    padding: 44px clamp(40px, 5vw, 72px) 64px;
+  }
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+
+  @media (min-width: 980px) {
+    grid-template-columns: 1fr 440px;
+    gap: 32px;
+    align-items: start;
+  }
+
+  @media (min-width: 1240px) {
+    grid-template-columns: 1fr 480px;
+    gap: 40px;
+  }
+}

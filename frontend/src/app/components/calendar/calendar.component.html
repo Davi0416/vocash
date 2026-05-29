@@ -1,0 +1,45 @@
+<div class="cal-card">
+  <div class="cal-head">
+    <button class="cal-nav" (click)="prev()" aria-label="Mês anterior">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <div class="cal-title">{{ title() }}</div>
+    <button class="cal-nav" (click)="next()" aria-label="Próximo mês">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="cal-invoice">
+    <div class="ci-label">Fatura deste mês</div>
+    <div class="ci-val">{{ invoiceFormatted() }}</div>
+    <div class="ci-meta">{{ invoiceMeta() }}</div>
+  </div>
+
+  <div class="cal-grid">
+    <div class="cal-dow" *ngFor="let d of dow">{{ d }}</div>
+
+    <div
+      *ngFor="let cell of cells()"
+      class="cal-cell"
+      [class.empty]="cell.empty"
+      [class.fechamento]="cell.isFechamento"
+      [class.vencimento]="cell.isVencimento"
+      [class.today]="cell.isToday">
+      <ng-container *ngIf="!cell.empty">
+        {{ cell.day }}
+        <span class="cal-badge" *ngIf="cell.badge">{{ cell.badge }}</span>
+        <span class="cal-dot" *ngIf="cell.hasGasto"></span>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="cal-legend">
+    <span><i class="lg fechamento"></i>fechamento</span>
+    <span><i class="lg vencimento"></i>vencimento</span>
+    <span><i class="lg gasto"></i>gasto</span>
+  </div>
+</div>

@@ -1,0 +1,94 @@
+.cal-card {
+  background: linear-gradient(165deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 26px 26px 22px; box-shadow: var(--shadow); margin-bottom: 24px;
+}
+
+.cal-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+
+.cal-title {
+  font-family: var(--ff-serif); font-weight: 600;
+  font-size: 22px; letter-spacing: -.3px; text-transform: capitalize;
+}
+
+.cal-nav {
+  width: 38px; height: 38px; border-radius: 11px;
+  display: grid; place-items: center;
+  background: var(--surface-3); border: 1px solid var(--border);
+  color: var(--text-muted); transition: .15s;
+  &:hover { color: var(--text); border-color: var(--accent); transform: translateY(-1px); }
+  svg { width: 18px; height: 18px; }
+}
+
+.cal-invoice {
+  background: var(--bg); border: 1px solid var(--border-soft);
+  border-radius: 16px; padding: 16px 20px; margin-bottom: 20px;
+}
+.ci-label { font-size: 11.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; }
+.ci-val   { font-family: var(--ff-serif); font-weight: 700; font-size: 36px; letter-spacing: -.8px; line-height: 1.05; margin: 3px 0 5px; }
+.ci-meta  { font-size: 13px; color: var(--text-muted); }
+
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px;
+}
+
+.cal-dow {
+  text-align: center; font-size: 11px; font-weight: 700;
+  color: var(--text-dim); text-transform: uppercase;
+  letter-spacing: .3px; padding-bottom: 8px; min-width: 0;
+}
+
+.cal-cell {
+  aspect-ratio: 1; min-width: 0; border-radius: 11px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 1px;
+  font-size: 14px; font-weight: 600; color: var(--text);
+  position: relative; border: 1.5px solid transparent;
+
+  &.empty { visibility: hidden; }
+  &.today { background: var(--surface-3); box-shadow: inset 0 0 0 1.5px var(--border); }
+
+  &.fechamento {
+    border-color: #E0A93B;
+    background: color-mix(in oklab, #E0A93B 15%, transparent);
+    color: color-mix(in oklab, #E0A93B 72%, var(--text));
+  }
+  &.vencimento {
+    border-color: #E0566B;
+    background: color-mix(in oklab, #E0566B 16%, transparent);
+    color: color-mix(in oklab, #E0566B 72%, var(--text));
+  }
+}
+
+.cal-dot {
+  position: absolute; bottom: 6px; left: 50%;
+  transform: translateX(-50%); width: 5px; height: 5px;
+  border-radius: 50%; background: var(--accent);
+}
+
+.cal-cell.fechamento .cal-dot,
+.cal-cell.vencimento .cal-dot { bottom: 4px; }
+
+.cal-badge {
+  font-size: 7.5px; font-weight: 800; letter-spacing: .2px;
+  text-transform: uppercase; line-height: 1; margin-top: 1px;
+}
+
+.cal-legend {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+
+  span {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12.5px; color: var(--text-muted);
+  }
+  i {
+    width: 11px; height: 11px; border-radius: 3px; display: inline-block; flex: none;
+    &.fechamento { background: #E0A93B; }
+    &.vencimento { background: #E0566B; }
+    &.gasto      { background: var(--accent); border-radius: 50%; }
+  }
+}

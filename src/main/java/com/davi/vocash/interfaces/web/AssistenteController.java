@@ -6,18 +6,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Controller REST que expõe o endpoint de entrada do assistente financeiro por voz.
+ * Controller REST da interface de voz do assistente financeiro.
  *
- * <p><b>Camada DDD:</b> Interfaces / Web — é a fronteira entre o mundo externo
- * (cliente HTTP) e a camada de aplicação. Não contém lógica de negócio; apenas
- * recebe a requisição, delega ao {@link OrquestradorService} e devolve a resposta.
+ * <p><b>Camada DDD:</b> Interfaces / Web.
  *
- * <p><b>Papel no pipeline:</b> ponto de entrada do fluxo. Recebe o arquivo de
- * áudio via {@code multipart/form-data}, inicia o pipeline de transcrição +
- * interpretação + tool calling e retorna a resposta textual gerada pelo
- * assistente.
- *
- * <p><b>Base URL:</b> {@code /api/v1/assistente}
+ * <p>Endpoints:
+ * <ul>
+ *   <li>{@code POST /api/v1/assistente/processar} — áudio multipart → Whisper → LLM</li>
+ *   <li>{@code POST /api/v1/assistente/processar-texto} — texto → LLM (sem Whisper)</li>
+ * </ul>
  */
 @RestController
 @RequestMapping("/api/v1/assistente")
@@ -25,29 +22,30 @@ public class AssistenteController {
 
     private final OrquestradorService orquestradorService;
 
-    /**
-     * @param orquestradorService serviço de orquestração do pipeline de IA
-     */
     public AssistenteController(OrquestradorService orquestradorService) {
         this.orquestradorService = orquestradorService;
     }
 
     /**
-     * Processa um áudio enviado pelo usuário e retorna a resposta do assistente.
+     * Processa áudio via Whisper + LLM.
      *
-     * <p>O arquivo é transcrito pelo Whisper, o texto é interpretado pelo LLM
-     * e a tool adequada ({@code registrarGasto} ou {@code gerarRelatorio}) é
-     * executada automaticamente pelo Spring AI.
-     *
-     * @param arquivo arquivo de áudio enviado como {@code multipart/form-data}
-     *                com o campo {@code audio} (máximo 25 MB, configurável em
-     *                {@code application.yml})
-     * @return {@code 200 OK} com a resposta textual do assistente no corpo
-     * @throws Exception se ocorrer erro na leitura do arquivo ou nas chamadas à API da Groq
+     * @param arquivo arquivo de áudio (campo {@code audio}, até 25 MB)
+     * @return resposta textual do assistente
      */
     @PostMapping("/processar")
     public ResponseEntity<String> processar(@RequestParam("audio") MultipartFile arquivo) throws Exception {
-        String resposta = orquestradorService.processar(arquivo);
-        return ResponseEntity.ok(resposta);
+        return ResponseEntity.ok(orquestradorService.processar(arquivo));
+    }
+
+    /**
+     * Processa texto diretamente via LLM, sem transcrição.
+     * Usado pelo frontend no modo de entrada manual / chips.
+     *
+     * @param texto frase do usuário
+     * @return resposta textual do assistente
+     */
+    @PostMapping("/processar-texto")
+    public ResponseEntity<String> processarTexto(@RequestParam("texto") String texto) {
+        return ResponseEntity.ok(orquestradorService.processarTexto(texto));
     }
 }

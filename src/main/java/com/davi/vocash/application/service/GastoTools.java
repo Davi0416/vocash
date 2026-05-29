@@ -19,8 +19,8 @@ import java.util.List;
  *
  * <p><b>Papel no pipeline:</b> esta classe é registrada como bean de tools no
  * {@link OrquestradorService}. Após o LLM analisar o texto transcrito pelo
- * Whisper, ele decide qual método chamar e com quais parâmetros; o Spring AI
- * executa o método correspondente e devolve o resultado ao LLM para compor a
+ * Whisper, ele decide qual metodo chamar e com quais parâmetros; o Spring AI
+ * executa o metodo correspondente e devolve o resultado ao LLM para compor a
  * resposta final ao usuário.
  *
  * <p>As duas tools disponíveis são:
@@ -41,14 +41,11 @@ public class GastoTools {
     /**
      * Registra um gasto no banco de dados a partir dos parâmetros extraídos pelo LLM.
      *
-     * <p>O LLM invoca esta tool quando identifica no texto frases como
-     * "gastei", "paguei" ou "comprei".
-     *
-     * @param valor     valor monetário em reais informado pelo usuário
-     * @param categoria categoria semântica: {@code alimentacao}, {@code transporte},
-     *                  {@code lazer}, {@code saude} ou {@code outros}
-     * @param descricao descrição breve do item ou serviço
-     * @param local     estabelecimento ou local onde o gasto ocorreu
+     * @param valor       valor monetário em reais informado pelo usuário
+     * @param categoria   categoria semântica
+     * @param descricao   descrição breve do item ou serviço
+     * @param local       estabelecimento ou local onde o gasto ocorreu
+     * @param parcelas    número de parcelas (1 = à vista)
      * @return mensagem de confirmação para o LLM incluir na resposta ao usuário
      */
     @Tool(description = """
@@ -56,26 +53,25 @@ public class GastoTools {
             Use quando o usuário mencionar que gastou, pagou ou comprou algo.
             """)
     public String registrarGasto(
-            @ToolParam(description = "Valor em reais do gasto") BigDecimal valor,
-            @ToolParam(description = "Categoria do gasto: alimentacao, transporte, lazer, saude, outros") String categoria,
+            @ToolParam(description = "Valor total em reais do gasto") BigDecimal valor,
+            @ToolParam(description = "Categoria: alimentacao, transporte, lazer, saude, contas, mercado, outros") String categoria,
             @ToolParam(description = "Descrição curta do que foi gasto") String descricao,
-            @ToolParam(description = "Local onde o gasto ocorreu") String local
+            @ToolParam(description = "Local onde o gasto ocorreu") String local,
+            @ToolParam(description = "Número de parcelas, padrão 1 (à vista). Use >1 se o usuário mencionar parcelamento.") Integer parcelas
     ) {
-        Gasto gasto = new Gasto(valor, categoria, descricao, local, LocalDate.now());
+        Gasto gasto = new Gasto(valor, categoria, descricao, local, LocalDate.now(), parcelas);
         gastoRepository.salvar(gasto);
-        return "Gasto de R$ " + valor + " em " + categoria + " registrado com sucesso!";
+        String msg = parcelas != null && parcelas > 1
+                ? "Gasto de R$ " + valor + " em " + categoria + " em " + parcelas + "x registrado!"
+                : "Gasto de R$ " + valor + " em " + categoria + " registrado com sucesso!";
+        return msg;
     }
 
     /**
      * Consulta os gastos registrados e retorna um relatório formatado em texto.
      *
-     * <p>O LLM invoca esta tool quando o usuário solicita um resumo ou relatório
-     * de gastos. Se {@code categoria} estiver vazia ou nula, retorna todos os gastos;
-     * caso contrário, filtra pela categoria informada.
-     *
-     * @param categoria categoria para filtrar os gastos; se vazia, considera todos
-     * @return relatório em texto com cada gasto e o total acumulado, ou mensagem
-     *         informando que não há gastos
+     * @param categoria categoria para filtrar; se vazia retorna todos
+     * @return relatório em texto com cada gasto e o total acumulado
      */
     @Tool(description = """
             Gera um relatório dos gastos do usuário.

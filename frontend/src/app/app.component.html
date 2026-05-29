@@ -1,0 +1,31 @@
+<div class="shell">
+  <app-header
+    (openSettings)="openSettings()"
+    (toggleTheme)="settingsService.update({ theme: settingsService.settings().theme === 'dark' ? 'light' : 'dark' })">
+  </app-header>
+
+  <div class="grid">
+    <!-- coluna esquerda -->
+    <div class="col-main">
+      <app-hero
+        [listening]="listening()"
+        (listeningChange)="onListeningChange($event)">
+      </app-hero>
+
+      <app-expense-list></app-expense-list>
+    </div>
+
+    <!-- coluna direita -->
+    <aside class="col-side">
+      <app-calendar></app-calendar>
+      <app-summary></app-summary>
+    </aside>
+  </div>
+</div>
+
+<app-toast></app-toast>
+
+<app-settings-panel
+  [open]="settingsOpen()"
+  (close)="closeSettings()">
+</app-settings-panel>

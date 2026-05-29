@@ -1,0 +1,38 @@
+<div class="summary" *ngIf="showChart()">
+  <h3>Resumo por categoria</h3>
+
+  <div *ngIf="segments().length === 0" class="summary-empty">
+    Adicione gastos para ver a distribuição por categoria.
+  </div>
+
+  <ng-container *ngIf="segments().length > 0">
+    <div class="donut-wrap">
+      <svg viewBox="0 0 200 200" style="transform: rotate(-90deg); width: 100%; height: 100%;">
+        <!-- track -->
+        <circle cx="100" cy="100" r="80" fill="none" stroke="var(--border-soft)" stroke-width="22"/>
+        <!-- segments -->
+        <circle
+          *ngFor="let seg of segments()"
+          cx="100" cy="100" r="80"
+          fill="none"
+          [attr.stroke]="seg.color"
+          stroke-width="22"
+          [attr.stroke-dasharray]="seg.dasharray"
+          [attr.stroke-dashoffset]="seg.dashoffset"/>
+      </svg>
+      <div class="donut-center">
+        <div class="dc-label">Total</div>
+        <div class="dc-val">{{ fmt(total()) }}</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="leg-row" *ngFor="let seg of segments()">
+        <span class="leg-dot" [style.background]="seg.color"></span>
+        <span class="leg-name">{{ seg.label }}</span>
+        <span class="leg-pct">{{ seg.pct }}%</span>
+        <span class="leg-val">{{ fmt(seg.value) }}</span>
+      </div>
+    </div>
+  </ng-container>
+</div>

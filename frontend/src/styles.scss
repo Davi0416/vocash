@@ -1,0 +1,64 @@
+/* ============ TOKENS ============ */
+:root {
+  --bg: #F4F5F8; --bg-2: #ECEEF3;
+  --surface: #FFFFFF; --surface-2: #FFFFFF; --surface-3: #F1F3F8;
+  --border: #E5E8EF; --border-soft: #EDEFF5;
+  --text: #13151B; --text-muted: #5E6675; --text-dim: #98A0B0;
+  --accent: #5B5BD6; --accent-2: #7A7AEC;
+  --shadow: 0 18px 44px -24px rgba(24,32,64,.24), 0 2px 8px -4px rgba(24,32,64,.10);
+  --radius: 22px; --radius-sm: 14px;
+  --ff-serif: "Bricolage Grotesque", system-ui, sans-serif;
+  --ff-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #0F1116; --bg-2: #14171E;
+  --surface: #181C24; --surface-2: #1C212A; --surface-3: #252B36;
+  --border: #2A313D; --border-soft: #222831;
+  --text: #EEF1F6; --text-muted: #9AA3B2; --text-dim: #69727F;
+  --shadow: 0 24px 60px -24px rgba(0,0,0,.6), 0 4px 14px -6px rgba(0,0,0,.45);
+}
+
+[data-accent="indigo"]    { --accent: #5B5BD6; --accent-2: #7A7AEC; }
+[data-accent="esmeralda"] { --accent: #0E9F6E; --accent-2: #13C088; }
+[data-accent="coral"]     { --accent: #F0603A; --accent-2: #FF7E5C; }
+[data-accent="violeta"]   { --accent: #8B5CF6; --accent-2: #A78BFA; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+
+body {
+  font-family: var(--ff-sans);
+  color: var(--text);
+  background:
+    radial-gradient(120% 80% at 80% -10%, color-mix(in oklab, var(--accent) 9%, transparent), transparent 55%),
+    radial-gradient(90% 60% at -10% 110%, color-mix(in oklab, var(--accent) 6%, transparent), transparent 50%),
+    linear-gradient(180deg, var(--bg-2), var(--bg));
+  background-attachment: fixed;
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  transition: background-color .3s, color .3s;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, select { font-family: inherit; }
+::selection { background: color-mix(in oklab, var(--accent) 35%, transparent); }
+
+/* ============ KEYFRAMES ============ */
+@keyframes ripple {
+  0%   { width: 96px; height: 96px; opacity: .55; }
+  100% { width: 128px; height: 128px; opacity: 0; transform: scale(1.18); }
+}
+@keyframes breathe {
+  50% { box-shadow: 0 14px 44px -8px color-mix(in oklab, #F8716A 85%, transparent); }
+}
+@keyframes eq {
+  0%, 100% { height: 7px; }
+  50%       { height: 24px; }
+}
+@keyframes itemIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}

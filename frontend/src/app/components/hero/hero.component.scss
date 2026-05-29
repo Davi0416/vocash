@@ -1,0 +1,153 @@
+.hero {
+  background: linear-gradient(165deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 34px 28px 30px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+
+  &::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(70% 50% at 50% 0%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+}
+
+.total-label {
+  font-size: 12.5px; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--text-dim); font-weight: 600;
+}
+
+.total-value {
+  font-family: var(--ff-serif); font-weight: 600;
+  line-height: .95; letter-spacing: -1.5px;
+  font-size: clamp(52px, 11.5vw, 78px);
+  margin: 8px 0 2px;
+
+  .cents { color: var(--text-muted); font-size: .5em; vertical-align: baseline; letter-spacing: -.5px; }
+}
+
+.total-sub {
+  font-size: 13px; color: var(--text-muted);
+  b { color: var(--text); font-weight: 600; }
+}
+
+.month-pill {
+  display: inline-flex; align-items: center; gap: 11px;
+  margin: 18px auto 0; position: relative; z-index: 2;
+  background: var(--surface-3); border: 1px solid var(--border);
+  border-radius: 999px; padding: 7px 7px 7px 15px;
+
+  svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+
+  .mp-label {
+    font-size: 13.5px; color: var(--text-muted); white-space: nowrap;
+    b { color: var(--text); font-weight: 700; text-transform: capitalize; }
+  }
+  .mp-val {
+    font-weight: 700; font-size: 14.5px;
+    background: var(--accent); color: #fff;
+    padding: 5px 13px; border-radius: 999px;
+    letter-spacing: -.2px; white-space: nowrap;
+  }
+}
+
+/* mic */
+.mic-wrap {
+  position: relative; width: 128px; height: 128px;
+  margin: 26px auto 6px; display: grid; place-items: center;
+}
+
+.mic-btn {
+  position: relative; z-index: 3;
+  width: 96px; height: 96px; border-radius: 50%;
+  background: linear-gradient(150deg, var(--accent), var(--accent-2));
+  display: grid; place-items: center;
+  box-shadow: 0 14px 34px -10px color-mix(in oklab, var(--accent) 75%, transparent), inset 0 2px 4px rgba(255,255,255,.25);
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1);
+
+  &:hover { transform: scale(1.05); }
+  &:active { transform: scale(.95); }
+  svg { width: 36px; height: 36px; color: #fff; }
+}
+
+.ring {
+  position: absolute; border-radius: 50%;
+  border: 2px solid var(--accent); opacity: 0;
+}
+
+.hero.listening {
+  .ring { animation: ripple 1.8s ease-out infinite; }
+  .ring:nth-child(2) { animation-delay: .6s; }
+  .ring:nth-child(3) { animation-delay: 1.2s; }
+
+  .mic-btn {
+    background: linear-gradient(150deg, #EF4444, #F8716A);
+    animation: breathe 1.4s ease-in-out infinite;
+  }
+}
+
+.mic-hint {
+  font-size: 13.5px; color: var(--text-muted); min-height: 20px; transition: .2s;
+}
+
+/* capture */
+.capture {
+  max-height: 0; opacity: 0; overflow: hidden;
+  transition: max-height .4s ease, opacity .3s ease, margin .3s;
+}
+
+.hero.listening .capture {
+  max-height: 240px; opacity: 1; margin-top: 18px;
+}
+
+.capture-inner {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 12px 12px 16px;
+  display: flex; align-items: center; gap: 12px; text-align: left;
+
+  input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: 16px; min-width: 0;
+    &::placeholder { color: var(--text-dim); }
+  }
+}
+
+.eq {
+  display: flex; align-items: center; gap: 3px; height: 26px; flex: none;
+  span {
+    width: 3px; height: 8px; border-radius: 3px;
+    background: var(--accent); opacity: .85;
+  }
+}
+
+.hero.listening .eq span {
+  animation: eq .9s ease-in-out infinite;
+  &:nth-child(2) { animation-delay: .15s; }
+  &:nth-child(3) { animation-delay: .3s; }
+  &:nth-child(4) { animation-delay: .45s; }
+  &:nth-child(5) { animation-delay: .1s; }
+}
+
+.send-btn {
+  flex: none; width: 40px; height: 40px; border-radius: 11px;
+  display: grid; place-items: center;
+  background: var(--accent); color: #fff; transition: .18s;
+  &:hover { background: var(--accent-2); }
+  svg { width: 20px; height: 20px; }
+}
+
+.chips {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px;
+}
+
+.chip {
+  font-size: 12.5px; color: var(--text-muted);
+  background: var(--surface-3); border: 1px solid var(--border);
+  padding: 6px 12px; border-radius: 999px; transition: .18s;
+  &:hover { color: var(--text); border-color: var(--accent); }
+}

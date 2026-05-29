@@ -1,0 +1,44 @@
+.summary {
+  background: linear-gradient(165deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 30px 30px 32px; box-shadow: var(--shadow);
+  position: sticky; top: 24px;
+
+  h3 {
+    font-family: var(--ff-serif); font-weight: 600;
+    font-size: 23px; letter-spacing: -.3px; margin-bottom: 22px;
+  }
+}
+
+.donut-wrap {
+  position: relative; width: 240px; height: 240px; margin: 0 auto 8px;
+}
+
+.donut-center {
+  position: absolute; inset: 0;
+  display: grid; place-content: center; text-align: center;
+
+  .dc-label {
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 600;
+  }
+  .dc-val {
+    font-family: var(--ff-serif); font-weight: 700;
+    font-size: 33px; line-height: 1.05; margin-top: 2px; letter-spacing: -.5px;
+  }
+}
+
+.legend { display: flex; flex-direction: column; gap: 2px; margin-top: 24px; }
+
+.leg-row {
+  display: flex; align-items: center; gap: 13px;
+  padding: 12px 8px; border-radius: 11px; transition: .15s;
+  &:hover { background: var(--surface-3); }
+}
+
+.leg-dot  { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.leg-name { flex: 1; font-size: 15.5px; }
+.leg-pct  { font-size: 13px; color: var(--text-dim); width: 42px; text-align: right; }
+.leg-val  { font-size: 15.5px; font-weight: 700; text-align: right; letter-spacing: -.2px; }
+
+.summary-empty { text-align: center; color: var(--text-dim); font-size: 13.5px; padding: 30px 0; }

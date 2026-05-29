@@ -1,49 +1,44 @@
 package com.davi.vocash.application.service;
 
+import com.davi.vocash.application.exception.AudioInvalidoException;
+import com.davi.vocash.application.exception.ServicoIndisponivelException;
+import com.davi.vocash.application.exception.TranscricaoVaziaException;
 import com.davi.vocash.infrastructure.TranscricaoService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Set;
+
 /**
- * Serviço responsável por orquestrar o pipeline de processamento de áudio do Vocash.
+ * Serviço responsável por orquestrar o pipeline de processamento do Vocash.
  *
- * <p><b>Camada DDD:</b> Application — coordena os serviços de infraestrutura
- * (transcrição) e as tools de domínio ({@link GastoTools}), sem conter regras
- * de negócio próprias.
+ * <p><b>Camada DDD:</b> Application.
  *
- * <p><b>Papel no pipeline:</b>
- * <ol>
- *   <li>Recebe o arquivo de áudio enviado pelo controller.</li>
- *   <li>Delega a transcrição para {@link TranscricaoService} (Whisper via Groq).</li>
- *   <li>Envia o texto transcrito ao {@link ChatClient} configurado com o LLM
- *       {@code llama-3.3-70b-versatile} e as tools {@link GastoTools}.</li>
- *   <li>O LLM decide qual tool invocar; o Spring AI executa o método Java
- *       correspondente e devolve o resultado ao modelo.</li>
- *   <li>Retorna a resposta final em texto ao controller.</li>
- * </ol>
- *
- * <p>O {@link ChatClient} é configurado no construtor com um system prompt em
- * português e as tools registradas via {@code defaultTools(gastoTools)}.
+ * <p>Valida a entrada antes de chamar os serviços externos e converte falhas
+ * de infraestrutura em exceções de domínio ({@link ServicoIndisponivelException}).
  */
 @Service
 public class OrquestradorService {
 
-    private final ChatClient chatClient;
-    private final GastoTools gastoTools;
-    private final TranscricaoService transcricaoService;
+    /** Tamanho mínimo de áudio considerado válido (3 KB). */
+    private static final long MIN_AUDIO_BYTES = 3_072;
 
     /**
-     * Constrói o serviço e configura o {@link ChatClient} com o system prompt
-     * e as tools de gastos.
-     *
-     * @param builder            builder do ChatClient injetado pelo Spring AI
-     * @param gastoTools         bean com as tools {@code registrarGasto} e {@code gerarRelatorio}
-     * @param transcricaoService serviço de transcrição de áudio via Whisper
+     * Textos que o Whisper retorna quando o áudio não tem fala útil.
+     * Comparados em lowercase após trim.
      */
-    public OrquestradorService(ChatClient.Builder builder, GastoTools gastoTools, TranscricaoService transcricaoService) {
-        this.gastoTools = gastoTools;
+    private static final Set<String> WHISPER_NOISE_TOKENS = Set.of(
+            "", "[music]", "[applause]", "[noise]", "[silence]",
+            "(music)", "(applause)", "(noise)", "...", "."
+    );
+
+    private final ChatClient chatClient;
+    private final TranscricaoService transcricaoService;
+
+    public OrquestradorService(ChatClient.Builder builder, GastoTools gastoTools,
+                               TranscricaoService transcricaoService) {
         this.transcricaoService = transcricaoService;
         this.chatClient = builder
                 .defaultSystem("""
@@ -57,25 +52,81 @@ public class OrquestradorService {
     }
 
     /**
-     * Executa o pipeline completo: transcrição do áudio → interpretação pelo LLM
-     * → execução da tool correspondente → resposta em texto.
+     * Pipeline completo: áudio → validação → Whisper → LLM → tool → resposta.
      *
-     * @param arquivo arquivo de áudio enviado pelo usuário (multipart/form-data)
-     * @return resposta textual gerada pelo assistente após executar a ação solicitada
-     * @throws Exception se a leitura do arquivo ou a chamada à API da Groq falhar
+     * @throws AudioInvalidoException       se o arquivo estiver vazio ou muito curto
+     * @throws TranscricaoVaziaException    se o Whisper não extrair texto útil
+     * @throws ServicoIndisponivelException se a API da Groq falhar
      */
-    public String processar(MultipartFile arquivo) throws Exception {
-        ByteArrayResource resource = new ByteArrayResource(arquivo.getBytes()) {
-            @Override
-            public String getFilename() {
-                return arquivo.getOriginalFilename();
-            }
-        };
+    public String processar(MultipartFile arquivo) {
+        validarAudio(arquivo);
 
-        String texto = transcricaoService.transcrever(resource);
-        return chatClient.prompt()
-                .user(texto)
-                .call()
-                .content();
+        ByteArrayResource resource;
+        try {
+            resource = new ByteArrayResource(arquivo.getBytes()) {
+                @Override public String getFilename() { return arquivo.getOriginalFilename(); }
+            };
+        } catch (Exception ex) {
+            throw new AudioInvalidoException("Não foi possível ler o arquivo de áudio.");
+        }
+
+        String texto;
+        try {
+            texto = transcricaoService.transcrever(resource);
+        } catch (Exception ex) {
+            throw new ServicoIndisponivelException(
+                    "O serviço de transcrição está temporariamente indisponível. Tente novamente em instantes.");
+        }
+
+        validarTranscricao(texto);
+
+        try {
+            return chatClient.prompt().user(texto).call().content();
+        } catch (Exception ex) {
+            throw new ServicoIndisponivelException(
+                    "O assistente de IA está temporariamente indisponível. Tente novamente em instantes.");
+        }
+    }
+
+    /**
+     * Pipeline sem transcrição: texto → validação → LLM → tool → resposta.
+     *
+     * @throws AudioInvalidoException       se o texto estiver vazio
+     * @throws ServicoIndisponivelException se a API da Groq falhar
+     */
+    public String processarTexto(String texto) {
+        if (texto == null || texto.isBlank()) {
+            throw new AudioInvalidoException("O texto enviado está vazio.");
+        }
+        try {
+            return chatClient.prompt().user(texto).call().content();
+        } catch (Exception ex) {
+            throw new ServicoIndisponivelException(
+                    "O assistente de IA está temporariamente indisponível. Tente novamente em instantes.");
+        }
+    }
+
+    // ── validações privadas ───────────────────────────────────────────────────
+
+    private void validarAudio(MultipartFile arquivo) {
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw new AudioInvalidoException("Nenhum arquivo de áudio foi recebido.");
+        }
+        if (arquivo.getSize() < MIN_AUDIO_BYTES) {
+            throw new AudioInvalidoException(
+                    "O áudio é muito curto. Fale seu gasto e aguarde o envio automático.");
+        }
+    }
+
+    private void validarTranscricao(String texto) {
+        if (texto == null) {
+            throw new TranscricaoVaziaException(
+                    "Não foi possível transcrever o áudio. Tente falar mais próximo do microfone.");
+        }
+        String normalizado = texto.trim().toLowerCase();
+        if (normalizado.length() < 3 || WHISPER_NOISE_TOKENS.contains(normalizado)) {
+            throw new TranscricaoVaziaException(
+                    "Não entendi o áudio. Fale claramente o seu gasto (ex.: \"gastei 50 reais no mercado\").");
+        }
     }
 }
