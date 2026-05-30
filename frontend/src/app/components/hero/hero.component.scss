@@ -72,6 +72,18 @@
   &:hover { transform: scale(1.05); }
   &:active { transform: scale(.95); }
   svg { width: 36px; height: 36px; color: #fff; }
+
+  &.processing {
+    opacity: .7;
+    cursor: not-allowed;
+    &:hover { transform: none; }
+  }
+
+  .ico-spin { animation: spin 1s linear infinite; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .ring {

@@ -61,10 +61,10 @@ public class GastoTools {
     ) {
         Gasto gasto = new Gasto(valor, categoria, descricao, local, LocalDate.now(), parcelas);
         gastoRepository.salvar(gasto);
-        String msg = parcelas != null && parcelas > 1
-                ? "Gasto de R$ " + valor + " em " + categoria + " em " + parcelas + "x registrado!"
+        // Usa gasto.getParcelas() — já normalizado pelo construtor (null/0 → 1)
+        return gasto.getParcelas() > 1
+                ? "Gasto de R$ " + valor + " em " + categoria + " em " + gasto.getParcelas() + "x registrado!"
                 : "Gasto de R$ " + valor + " em " + categoria + " registrado com sucesso!";
-        return msg;
     }
 
     /**

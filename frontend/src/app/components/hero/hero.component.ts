@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExpenseService } from '../../services/expense.service';
@@ -28,6 +28,7 @@ const MIN_RECORDING_MS = 900;
 @Component({
   selector: 'app-hero',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   templateUrl: './hero.component.html',
   styleUrls: ['./hero.component.scss'],
@@ -36,9 +37,10 @@ export class HeroComponent implements OnDestroy {
   @Input() listening = false;
   @Output() listeningChange = new EventEmitter<boolean>();
 
-  phrase   = signal('');
-  hint     = signal('Toque e diga seu gasto');
-  examples = EXAMPLES;
+  phrase      = signal('');
+  hint        = signal('Toque e diga seu gasto');
+  processing  = signal(false);
+  examples    = EXAMPLES;
 
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
@@ -80,6 +82,7 @@ export class HeroComponent implements OnDestroy {
   /* ── mic toggle ──────────────────────────────────────────────── */
 
   async toggleMic(): Promise<void> {
+    if (this.processing()) return;
     if (!this.listening) {
       await this.startListening();
     } else {
@@ -177,6 +180,9 @@ export class HeroComponent implements OnDestroy {
     // Para VAD antes de tudo para evitar chamadas duplas
     this.stopVAD();
 
+    // Bloqueia novo toque ANTES do onstop (fecha a janela de corrida)
+    this.processing.set(true);
+
     // Atualiza UI imediatamente
     this.listeningChange.emit(false);
     this.hint.set('✦ Processando áudio...');
@@ -190,18 +196,22 @@ export class HeroComponent implements OnDestroy {
       };
       this.mediaRecorder.stop();
     } else {
+      this.processing.set(false);
       this.hint.set('Toque e diga seu gasto');
     }
   }
 
   private sendAudio(blob: Blob): void {
+    // processing já foi setado true em stopRecordingAndSend()
     this.apiService.processarAudio(blob, 'gasto.webm').subscribe({
       next: resposta => {
+        this.processing.set(false);
         this.hint.set(resposta);
         this.expenseService.refresh();
         setTimeout(() => this.hint.set('Toque e diga seu gasto'), 4000);
       },
       error: (err: HttpErrorResponse) => {
+        this.processing.set(false);
         this.hint.set(extractErrorMessage(err, 'Erro ao processar áudio. Tente novamente.'));
         setTimeout(() => this.hint.set('Toque e diga seu gasto'), 5000);
       },
@@ -223,15 +233,18 @@ export class HeroComponent implements OnDestroy {
     this.stopVAD();
     this.cleanupStream();
     this.listeningChange.emit(false);
+    this.processing.set(true);
     this.hint.set('✦ Interpretando...');
 
     this.apiService.processarTexto(raw).subscribe({
       next: resposta => {
+        this.processing.set(false);
         this.hint.set(resposta);
         this.expenseService.refresh();
         setTimeout(() => this.hint.set('Toque e diga seu gasto'), 4000);
       },
       error: (err: HttpErrorResponse) => {
+        this.processing.set(false);
         this.hint.set(extractErrorMessage(err, 'Erro ao processar. Tente novamente.'));
         setTimeout(() => this.hint.set('Toque e diga seu gasto'), 5000);
       },

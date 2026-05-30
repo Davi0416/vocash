@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { ApiService, BackendGasto, GastoRequest } from './api.service';
-import { Expense, CategoryKey, CAT_KEYS } from '../models/expense.model';
+import { Expense, CategoryKey } from '../models/expense.model';
 import { SettingsService } from './settings.service';
 
 function toExpense(g: BackendGasto): Expense {
@@ -98,13 +98,23 @@ export class ExpenseService {
     this.api.atualizarGasto(Number(e.id), req).subscribe(() => this.refresh());
   }
 
-  /** Remove um gasto do backend e atualiza a lista. */
+  /** Remove um gasto do backend e atualiza a lista (optimistic). Reverte se falhar. */
   remove(id: string): void {
     const numId = Number(id);
     this.lastDeletedId = numId;
     this.lastDeletedExpense = this.expenses().find(e => e.id === id) ?? null;
+    const snapshot = this.lastDeletedExpense;
     this.expenses.update(list => list.filter(e => e.id !== id));
-    this.api.deletarGasto(numId).subscribe();
+    this.api.deletarGasto(numId).subscribe({
+      error: () => {
+        // Reverte: reinsere o item na posição original
+        if (snapshot) {
+          this.expenses.update(list => [snapshot, ...list]);
+        }
+        this.lastDeletedId = null;
+        this.lastDeletedExpense = null;
+      },
+    });
   }
 
   /** Desfaz o último delete recriando o gasto no backend. */

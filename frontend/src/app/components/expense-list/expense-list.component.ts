@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExpenseService, shortDate, todayISOExport } from '../../services/expense.service';
@@ -11,6 +11,7 @@ const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' 
 @Component({
   selector: 'app-expense-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   templateUrl: './expense-list.component.html',
   styleUrls: ['./expense-list.component.scss'],
@@ -28,7 +29,7 @@ export class ExpenseListComponent {
     private toastService: ToastService,
   ) {}
 
-  get expenses(): Expense[] { return this.expenseService.expenses(); }
+
 
   catColor(cat: CategoryKey): string { return CATS[cat].color; }
   catLabel(cat: CategoryKey): string { return CATS[cat].label; }

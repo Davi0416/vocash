@@ -31,7 +31,7 @@
   </div>
 
   <!-- LISTA DE ITENS EXISTENTES -->
-  <ng-container *ngFor="let e of expenses; trackBy: trackById">
+  <ng-container *ngFor="let e of expenseService.expenses(); trackBy: trackById">
 
     <!-- EDIT MODE -->
     <div class="item editing" *ngIf="editingId() === e.id">
@@ -94,7 +94,7 @@
   </ng-container>
 
   <!-- empty state -->
-  <div class="empty" *ngIf="expenses.length === 0 && editingId() !== '__new__'">
+  <div class="empty" *ngIf="expenseService.expenses().length === 0 && editingId() !== '__new__'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
       <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>

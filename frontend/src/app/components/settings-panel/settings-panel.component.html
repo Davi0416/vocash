@@ -36,23 +36,34 @@
 
   <!-- Cartão · fatura -->
   <div class="set-group">
-    <label>Cartão · fatura</label>
-    <div class="field-row">
-      <label class="num-field">
-        <span>Fecha dia</span>
-        <input type="number" min="1" max="31"
-          [value]="s.fechamento"
-          (change)="setFechamento($any($event.target).value)"
-          (blur)="setFechamento($any($event.target).value)">
-      </label>
-      <label class="num-field">
-        <span>Vence dia</span>
-        <input type="number" min="1" max="31"
-          [value]="s.vencimento"
-          (change)="setVencimento($any($event.target).value)"
-          (blur)="setVencimento($any($event.target).value)">
-      </label>
+    <label>Fechamento da fatura</label>
+    <div class="day-picker">
+      <button
+        *ngFor="let d of days"
+        [class.on]="s.fechamento === d"
+        (click)="setFechamento(d)"
+        [attr.aria-label]="'Fecha dia ' + d">{{ d }}</button>
     </div>
+  </div>
+
+  <div class="set-group">
+    <label>Vencimento da fatura</label>
+    <div class="day-picker">
+      <button
+        *ngFor="let d of days"
+        [class.on]="s.vencimento === d"
+        (click)="setVencimento(d)"
+        [attr.aria-label]="'Vence dia ' + d">{{ d }}</button>
+    </div>
+  </div>
+
+  <div class="invoice-preview">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    <span>{{ invoicePreview() }}</span>
   </div>
 
   <!-- Mostrar resumo -->
@@ -64,8 +75,7 @@
   </div>
 
   <p class="set-note">
-    Protótipo de demonstração. A transcrição por voz é simulada: ao tocar no microfone,
-    digite a frase do gasto e a IA interpreta valor, categoria, data e parcelas automaticamente.
-    As parcelas se distribuem pelos meses seguintes conforme o dia de fechamento.
+    As parcelas se distribuem pelos meses seguintes conforme o dia de fechamento configurado acima.
+    Alterar o fechamento ou vencimento reflete imediatamente no calendário e nos totais de fatura.
   </p>
 </div>
